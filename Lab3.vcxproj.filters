@@ -48,9 +48,6 @@
     </QtRcc>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="BTree.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="BinarySearchTree.h">
       <Filter>Header Files</Filter>
     </ClInclude>
