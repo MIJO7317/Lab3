@@ -55,15 +55,18 @@ private:
 	void MakeRotations(int count);
 	void CreateList();
 	void CreateBalancedBST();
-	void UpdateRound();
 public:
 	BinarySearchTree() : root(nullptr), round(NLR), round_names{ "NLR", "NRL", "LRN", "LNR", "RLN", "RNL" } {}
+	BinarySearchTree(const BinarySearchTree<T>& other);
+	BinarySearchTree(BinarySearchTree<T>&& other);
 	void SetRound(Round new_round) { this->round = new_round; }
 	void Add(const T& value);
 	void Delete(const T& value);
+	void Clear();
 	iterator FindPos(const T& value) const;
-	bool Find(const T& value) const;
+	bool Find(const T& value);
 	void Balancing();
+	void UpdateRound();
 	std::string ToString(std::string separator = " ");
 	~BinarySearchTree();
 private:
@@ -215,6 +218,23 @@ void BinarySearchTree<T>::UpdateRound()
 }
 
 template<typename T>
+BinarySearchTree<T>::BinarySearchTree(const BinarySearchTree<T>& other) : BinarySearchTree()
+{
+	for (auto el : other)
+		this->Add(el);
+}
+
+template<typename T>
+BinarySearchTree<T>::BinarySearchTree(BinarySearchTree<T>&& other)
+{
+	this->root = other.root;
+	other.root = nullptr;
+	this->round_names = other.round_names;
+	this->round = other.round;
+	this->thread = other.thread;
+}
+
+template<typename T>
 void BinarySearchTree<T>::Add(const T& value)
 {
 	if (root == nullptr)
@@ -237,7 +257,6 @@ void BinarySearchTree<T>::Add(const T& value)
 		else
 			current_parent->left = new Node(value, nullptr, nullptr, current_parent);
 	}
-	this->UpdateRound();
 }
 
 template<typename T>
@@ -268,7 +287,6 @@ void BinarySearchTree<T>::Delete(const T& value)
 				current->value = new_node->value;
 				current->key = new_node->key;
 				delete new_node;
-				this->UpdateRound();
 				return;
 			}
 			else if(current->right != nullptr)
@@ -279,7 +297,6 @@ void BinarySearchTree<T>::Delete(const T& value)
 				current->left = new_node->left;
 				current->right = new_node->right;
 				delete new_node;
-				this->UpdateRound();
 				return;
 			}
 			else
@@ -294,7 +311,6 @@ void BinarySearchTree<T>::Delete(const T& value)
 						current->parent->left = nullptr;
 				}
 				delete current;
-				this->UpdateRound();
 				return;
 			}
 		}
@@ -309,13 +325,24 @@ void BinarySearchTree<T>::Delete(const T& value)
 }
 
 template<typename T>
+void BinarySearchTree<T>::Clear()
+{
+	while (!this->thread.empty())
+	{
+		delete this->thread.back();
+		this->thread.pop_back();
+	}
+	this->root = nullptr;
+}
+
+template<typename T>
 typename BinarySearchTree<T>::iterator BinarySearchTree<T>::FindPos(const T& value) const
 {
 	return iterator(std::find(this->thread.begin(),this->thread.end(), value));
 }
 
 template<typename T>
-bool BinarySearchTree<T>::Find(const T& value) const
+bool BinarySearchTree<T>::Find(const T& value)
 {
 	Node* current = root;
 	size_t key = std::hash<T>{}(value);
@@ -343,7 +370,6 @@ void BinarySearchTree<T>::Balancing()
 		this->CreateList();
 		this->CreateBalancedBST();
 	}
-	this->UpdateRound();
 }
 
 template<typename T>
@@ -358,6 +384,7 @@ std::string BinarySearchTree<T>::ToString(std::string separator)
 template<typename T>
 BinarySearchTree<T>::~BinarySearchTree()
 {
+	this->UpdateRound();
 	while (!this->thread.empty())
 	{
 		delete this->thread.back();
